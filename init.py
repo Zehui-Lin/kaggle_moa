@@ -8,6 +8,7 @@ Description: file content
 
 
 class CFG_class:
+    ex_name = 'baseline'
     num_fold = 5
     max_grad_norm = 1000
     gradient_accumulation_steps = 1
@@ -15,7 +16,7 @@ class CFG_class:
     dropout = 0.5
     lr = 1e-2
     weight_decay = 1e-6
-    batch_size = 32
+    batch_size = 6400
     epochs = 20
     # total_cate_size=5
     # emb_size=4

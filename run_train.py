@@ -40,7 +40,7 @@ def run_single_nn(cfg, train, test, folds, num_features, cat_features, target, d
     model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
     scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer=optimizer, pct_start=0.1, div_factor=1e3,
-                                              max_lr=1e-2, epochs=cfg.epochs, steps_per_epoch=len(train_loader))
+                                                    max_lr=1e-2, epochs=cfg.epochs, steps_per_epoch=len(train_loader))
 
     # log
     log_df = pd.DataFrame(columns=(['EPOCH']+['TRAIN_LOSS']+['VALID_LOSS']))
@@ -61,7 +61,7 @@ def run_single_nn(cfg, train, test, folds, num_features, cat_features, target, d
             best_loss = valid_loss
             oof = np.zeros((len(train), len(cfg.target_cols)))
             oof[val_idx] = val_preds
-            torch.save(model.state_dict(), f"fold{fold_num}_seed{seed}.pth")
+            torch.save(model.state_dict(), os.path.join(cfg.ex_name, f"fold{fold_num}_seed{seed}.pth"))
 
     # predictions
     test_dataset = TestDataset(test, num_features, cat_features)

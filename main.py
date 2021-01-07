@@ -18,7 +18,6 @@ from iterstrat.ml_stratifiers import MultilabelStratifiedKFold
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Utils
-logger = get_logger()
 seed_everything(seed=7)
 
 # Data Loading
@@ -50,6 +49,7 @@ test = cate2num(test)
 
 # Training Configuration
 CFG = CFG_class(num_features, cat_features, target_cols)
+logger = get_logger(CFG.ex_name)
 
 # CV split 增加一列、记录交叉验证
 # folds比train多一列
@@ -81,11 +81,11 @@ for i in range(target.shape[1]):
 logger.info(f"Seed Averaged CV score: {score}")
 
 train[target_cols] = oof
-train[['sig_id']+target_cols].to_csv('data/oof.csv', index=False)
+train[['sig_id']+target_cols].to_csv('data/'+CFG.ex_name+'_oof.csv', index=False)
 
 test = test.merge(train_targets_scored, on='sig_id')
 test[target_cols] = predictions
-test[['sig_id']+target_cols].to_csv('data/pred.csv', index=False)
+test[['sig_id']+target_cols].to_csv('data/'+CFG.ex_name+'_pred.csv', index=False)
 
 
 # Final result with 'cp_type'=='ctl_vehicle' data
@@ -101,5 +101,5 @@ logger.info(f"Final result: {score}")
 
 # Submit
 sub = submission.drop(columns=target_cols).merge(test[['sig_id']+target_cols], on='sig_id', how='left').fillna(0)
-sub.to_csv('data/submission.csv', index=False)
+sub.to_csv('data/'+CFG.ex_name+'_submission.csv', index=False)
 sub.head()
