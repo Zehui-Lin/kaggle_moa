@@ -14,6 +14,7 @@ from sklearn.metrics import log_loss
 from torch.utils.data import DataLoader
 from utils import get_logger, seed_everything
 from dataset import TrainDataset, TestDataset
+from torch_ema import ExponentialMovingAverage
 from epoch_fun import train_fn, validate_fn, inference_fn
 
 
@@ -40,12 +41,16 @@ def run_single_nn(cfg, train, test, folds, num_features, cat_features, target, d
     # model
     if cfg.ex_name == "baseline":
         model = TabularNN(cfg)
-    if cfg.ex_name == "add_cate_x":
+    if "add_cate_x" in cfg.ex_name:
         model = TabularNNV2(cfg)
     model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
     scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer=optimizer, pct_start=0.1, div_factor=1e3,
                                                     max_lr=1e-2, epochs=cfg.epochs, steps_per_epoch=len(train_loader))
+    if "ema" in cfg.ex_name:
+        ema = ExponentialMovingAverage(model.parameters(), decay=0.995)
+    else:
+        ema = None
 
     # log
     log_df = pd.DataFrame(columns=(['EPOCH']+['TRAIN_LOSS']+['VALID_LOSS']))
@@ -53,7 +58,7 @@ def run_single_nn(cfg, train, test, folds, num_features, cat_features, target, d
     # train & validate
     best_loss = np.inf
     for epoch in range(cfg.epochs):
-        train_loss = train_fn(train_loader, model, optimizer, scheduler, device)
+        train_loss = train_fn(train_loader, model, optimizer, scheduler, device, ema)
         valid_loss, val_preds = validate_fn(valid_loader, model, device)
         log_row = {'EPOCH': epoch,
                    'TRAIN_LOSS': train_loss,
@@ -66,6 +71,8 @@ def run_single_nn(cfg, train, test, folds, num_features, cat_features, target, d
             best_loss = valid_loss
             oof = np.zeros((len(train), len(cfg.target_cols)))
             oof[val_idx] = val_preds
+            if ema is not None:
+                ema.copy_to(model.parameters())
             torch.save(model.state_dict(), os.path.join(cfg.ex_name, f"fold{fold_num}_seed{seed}.pth"))
 
     # predictions
@@ -74,7 +81,7 @@ def run_single_nn(cfg, train, test, folds, num_features, cat_features, target, d
                              num_workers=4, pin_memory=True)
     if cfg.ex_name == "baseline":
         model = TabularNN(cfg)
-    if cfg.ex_name == "add_cate_x":
+    if "add_cate_x" in cfg.ex_name:
         model = TabularNNV2(cfg)
     model.load_state_dict(torch.load(os.path.join(cfg.ex_name, f"fold{fold_num}_seed{seed}.pth")))
     model.to(device)

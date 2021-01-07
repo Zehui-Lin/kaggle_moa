@@ -14,7 +14,7 @@ from init import CFG_class
 # 先定义空的，main函数内会
 CFG = CFG_class()
 
-def train_fn(train_loader, model, optimizer, scheduler, device):
+def train_fn(train_loader, model, optimizer, scheduler, device, ema):
 
     losses = AverageMeter()
 
@@ -41,6 +41,8 @@ def train_fn(train_loader, model, optimizer, scheduler, device):
             optimizer.step()
             scheduler.step()
             optimizer.zero_grad()
+            if ema is not None:
+                ema.update(model.parameters())
 
     return losses.avg
 
