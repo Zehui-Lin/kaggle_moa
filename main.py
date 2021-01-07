@@ -11,7 +11,7 @@ import pandas as pd
 from init import CFG_class
 from run_train import run_kfold_nn
 from sklearn.metrics import log_loss
-from utils import get_logger, seed_everything, cate2num
+from utils import get_logger, seed_everything, cate2num, check_dir
 from iterstrat.ml_stratifiers import MultilabelStratifiedKFold
 
 # Gpu Setting
@@ -50,6 +50,7 @@ test = cate2num(test)
 # Training Configuration
 CFG = CFG_class(num_features, cat_features, target_cols)
 logger = get_logger(CFG.ex_name)
+check_dir(CFG.ex_name)
 
 # CV split 增加一列、记录交叉验证
 # folds比train多一列

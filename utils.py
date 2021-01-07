@@ -53,3 +53,7 @@ def cate2num(df):
     df['cp_time'] = df['cp_time'].map({24: 0, 48: 1, 72: 2})
     df['cp_dose'] = df['cp_dose'].map({'D1': 3, 'D2': 4})
     return df
+
+def check_dir(path):
+    if not os.path.exists(path):
+        os.makedirs(path)

@@ -5,15 +5,17 @@ LastEditors: Zehui Lin
 LastEditTime: 2021-01-05 18:28:36
 Description: file content
 '''
+import os
 import torch
 import numpy as np
 import pandas as pd
-from model import TabularNN
+from model import TabularNN, TabularNNV2
 from sklearn.metrics import log_loss
 from torch.utils.data import DataLoader
 from utils import get_logger, seed_everything
 from dataset import TrainDataset, TestDataset
 from epoch_fun import train_fn, validate_fn, inference_fn
+
 
 def run_single_nn(cfg, train, test, folds, num_features, cat_features, target, device, logger, fold_num=0, seed=7):
 
@@ -36,7 +38,10 @@ def run_single_nn(cfg, train, test, folds, num_features, cat_features, target, d
                               num_workers=4, pin_memory=True, drop_last=False)
 
     # model
-    model = TabularNN(cfg)
+    if cfg.ex_name == "baseline":
+        model = TabularNN(cfg)
+    if cfg.ex_name == "add_cate_x":
+        model = TabularNNV2(cfg)
     model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
     scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer=optimizer, pct_start=0.1, div_factor=1e3,
@@ -67,8 +72,11 @@ def run_single_nn(cfg, train, test, folds, num_features, cat_features, target, d
     test_dataset = TestDataset(test, num_features, cat_features)
     test_loader = DataLoader(test_dataset, batch_size=cfg.batch_size, shuffle=False,
                              num_workers=4, pin_memory=True)
-    model = TabularNN(cfg)
-    model.load_state_dict(torch.load(f"fold{fold_num}_seed{seed}.pth"))
+    if cfg.ex_name == "baseline":
+        model = TabularNN(cfg)
+    if cfg.ex_name == "add_cate_x":
+        model = TabularNNV2(cfg)
+    model.load_state_dict(torch.load(os.path.join(cfg.ex_name, f"fold{fold_num}_seed{seed}.pth")))
     model.to(device)
     predictions = inference_fn(test_loader, model, device)
 

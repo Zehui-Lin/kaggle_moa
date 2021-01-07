@@ -8,7 +8,7 @@ Description: file content
 
 
 class CFG_class:
-    ex_name = 'baseline'
+    ex_name = 'add_cate_x'
     num_fold = 5
     max_grad_norm = 1000
     gradient_accumulation_steps = 1
