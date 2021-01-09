@@ -136,3 +136,4 @@ data
 
 # model
 *.pth
+submission.csv

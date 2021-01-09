@@ -9,3 +9,6 @@ Final result: 0.02213272386173001
 # Add cate_x ema
 Seed Averaged CV score: 0.022038827354331943
 Final result: 0.02031192503455444
+
+# XGBoost
+OOF log loss:  0.016719877060459007

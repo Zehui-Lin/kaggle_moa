@@ -1,3 +1,6 @@
-# kaggle moa pytorch nn starter
+# pytorch kaggle moa 
 
-Mainly refer to https://www.kaggle.com/yasufuminakama/moa-pytorch-nn-starter with a few minor changes.
+Compare neural network with XGBOOST method in [kaggle moa](https://www.kaggle.com/c/lish-moa/).
+# References
+https://www.kaggle.com/yasufuminakama/moa-pytorch-nn-starter
+https://www.kaggle.com/fchmiel/xgboost-baseline-multilabel-classification
