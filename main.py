@@ -2,7 +2,7 @@
 Author: Zehui Lin
 Date: 2021-01-04 20:42:51
 LastEditors: Zehui Lin
-LastEditTime: 2021-01-05 19:24:27
+LastEditTime: 2021-01-15 16:57:58
 Description: file content
 '''
 import torch
@@ -41,8 +41,8 @@ test = test_features[test_features['cp_type'] != 'ctl_vehicle'].reset_index(drop
 # Dataset
 cat_features = ['cp_time', 'cp_dose']
 num_features = [c for c in train.columns if train.dtypes[c] != 'object']
-num_features = [c for c in num_features if c not in cat_features]  # 额外重新编码
-num_features = [c for c in num_features if c not in target_cols]  # 去除标签列
+num_features = [c for c in num_features if c not in cat_features]
+num_features = [c for c in num_features if c not in target_cols]
 target = train[target_cols].values
 train = cate2num(train)
 test = cate2num(test)
@@ -52,8 +52,6 @@ CFG = CFG_class(num_features, cat_features, target_cols)
 logger = get_logger(CFG.ex_name)
 check_dir(CFG.ex_name)
 
-# CV split 增加一列、记录交叉验证
-# folds比train多一列
 folds = train.copy()
 Fold = MultilabelStratifiedKFold(n_splits=CFG_class.num_fold, shuffle=True, random_state=7)
 for n, (train_index, val_index) in enumerate(Fold.split(folds, folds[target_cols])):
@@ -64,7 +62,7 @@ folds['fold'] = folds['fold'].astype(int)
 oof = np.zeros((len(train), len(CFG.target_cols)))
 predictions = np.zeros((len(test), len(CFG.target_cols)))
 
-# 3次5折交叉验证平均
+# 3 times 5 folds cross validation
 SEED = [7, 77, 777]
 for seed in SEED:
     _oof, _predictions = run_kfold_nn(CFG,
